@@ -29,7 +29,6 @@ class CriticNet(object):
         self.loss = tf.reduce_mean(tf.square(self.target_q_value_input - self.q_value_output)) + weight_decay
         self.optimizer = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE).minimize(self.loss)
         self.action_gradients = tf.gradients(self.q_value_output, self.action_input)
-        self.state_gradients = tf.gradients(self.q_value_output, self.state_input)
 
         self.train_step = 0
 

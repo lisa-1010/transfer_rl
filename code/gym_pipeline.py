@@ -21,7 +21,7 @@ class Pipeline(object):
             if done:
                 break
 
-    def run_test(self):
+    def run_test(self, episode_num):
         # run current agent model on environment,
         # evaluate average reward, create video
         total_reward = 0.0
@@ -36,16 +36,15 @@ class Pipeline(object):
                 if done:
                     break
         avg_reward = total_reward / NUM_TEST_TRIALS
-        print 'Average Reward Per Episode : ', avg_reward
-
+        print 'Episode: {} Average Reward Per Episode : {} '.format(episode_num,avg_reward)
 
     def run(self, num_episodes):
         for episode in xrange(num_episodes):
             self.run_episode()
 
             # Every 100 episodes, run test and print average reward
-            if episode % 10 == 0:
-                self.run_test()
+            if episode % 100 == 0:
+                self.run_test(episode)
         self.env.monitor.close()
 
 
