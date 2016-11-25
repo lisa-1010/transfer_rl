@@ -66,12 +66,12 @@ class DdpgAgent(object):
         
         # Compute train targets
         target_next_actions = self.actor.compute_target_actions(next_states)
-        policy_advantages = self.critic.get_action_gradients((states, actions))
+        self.critic.train((states, actions, train_targets))
         target_q_values = self.critic.compute_target_q_value((next_states, target_next_actions))
         train_targets = rewards + DISCOUNT*target_q_values
 
         # Train  and update networks 
-        self.critic.train((states, actions, train_targets))
+        policy_advantages = self.critic.get_action_gradients((states, actions))
         self.actor.train((states, policy_advantages))
         self.critic.update_target()
         self.actor.update_target()
