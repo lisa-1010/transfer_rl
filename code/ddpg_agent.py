@@ -2,6 +2,9 @@ import numpy as np
 from replay_buffer import *
 import tensorflow as tf
 
+from critic_net import *
+from actor_net import *
+
 TRAIN_BATCH_SIZE = 128 
 DISCOUNT = 0.99
 NOISE_MEAN = 0
@@ -12,8 +15,10 @@ class DdpgAgent(object):
         session = tf.InteractiveSession()
         self.state_norm_params = (env.observation_space.high, env.observation_space.low)
         self.action_norm_params = (env.action_space.high, env.action_space.low)
-        self.actor = ActorNet(session, env.observation_space.shape[0],  env.action_space.shape[0])
-        self.critic = CriticNet(session,env.observation_space.shape[0], env.action_space.shape[0])
+        state_dim = env.observation_space.shape[0]
+        action_dim = env.action_space.shape[0]
+        self.actor = ActorNet(session, state_dim, action_dim)
+        self.critic = CriticNet(session, state_dim, action_dim)
         self.replay_buffer = ReplayBuffer()
 
 
@@ -48,8 +53,9 @@ class DdpgAgent(object):
 
 
     def get_noisy_action(self, s):
-        action = self.get_action(s) + np.random.normal(NOISE_MEAN, NOISE_STD, np.shape(a))  # should use Ornstein–Uhlenbeck process for noise
-        return action
+        a = self.get_action(s)
+        a += np.random.normal(NOISE_MEAN, NOISE_STD, np.shape(a))  # should use Ornstein–Uhlenbeck process for noise
+        return a
 
     def get_action(self, s):
         a = self.actor.get_action(s)
