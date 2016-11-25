@@ -81,7 +81,43 @@ def create_target_q_critic_net(state_dim, action_dim, net_vars, merge_mode='elem
 
     return state_input, action_input, q_value_target, target_update
 
+def create_actor_net(state_dim, action_dim, layer_1_dim, layer_2_dim):
+    W1 = tf.Variable(init_variable_with_fan_in([state_dim, layer_1_dim]), name='W1')
+    b1 = tf.Variable(init_variable_with_fan_in([layer_1_dim], state_dim), name='b1')
 
+    W2 = tf.Variable(init_variable_with_fan_in([layer_1_dim, layer_2_dim]), name='W2')
+    b2 = tf.Variable(init_variable_with_fan_in([layer_2_dim], layer_1_dim),  name='b2_actor')
+
+    W3 = tf.Variable([layer_2_dim, action_dim], -5e-3, 5e-3, name='W3_actor')
+    b3 = tf.Variable([action_dim], -5e-3, 5e-3, name='b3_actor')
+
+    net_vars = [W1_state, b1_state, W1_action, b1_action, W2_state, W2_action, b2, W3, b3]
+    state_input = tf.placeholder("float", [None, state_dim])
+
+    h1 = tf.nn.relu(tf.matmul(state_input, W1) + b1)
+    h2 = tf.nn.relu(tf.matmul(h1, W2) + b2)
+
+    actions = tf.nn.tanh(tf.matmul(h2, W3) + b3) # causes actions to be between -1 and 1. Will need to un-nomrmalize when executing
+
+    return state_input, actions, net_vars
+
+
+def create_target_actor_net(state_dim, action_dim, net_vars, merge_mode='elemwise_sum'):
+    # Create an ExponentialMovingAverage object
+    ema = tf.train.ExponentialMovingAverage(decay=0.999)
+
+    target_update = ema.apply(net_vars)
+    target_net_vars = [ema.average(x) for x in net_vars] # moving averages of net_vars in q_critic_net
+
+    W1, b1, W2, b2, W3, b3 = tuple(target_net_vars)
+    state_input = tf.placeholder("float", [None, state_dim])
+
+    h1 = tf.nn.relu(tf.matmul(state_input, W1) + b1)
+    h2 = tf.nn.relu(tf.matmul(h1, W2) + b2)
+
+    target_actions = tf.nn.tanh(tf.matmul(h2, W3) + b3) # causes actions to be between -1 and 1. Will need to un-nomrmalize when executing
+
+    return state_input, target_actions, target_update
 # def create_state_action_three_layer_net(state_dim, action_dim, layer_1_dim, layer_2_dim, output_dim, mode='elemwise_sum'):
 #     # with tflearn
 #     state_input_layer = tflearn.input_data(shape=[None, state_dim])
