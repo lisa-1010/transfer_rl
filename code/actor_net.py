@@ -32,7 +32,7 @@ class ActorNet(object):
         state_batch, action_q_gradients = input_batch
         self.train_step += 1
         self.sess.run(self.optimizer, feed_dict={self.state_input:state_batch, self.action_q_gradients:action_q_gradients})
-        pass
+        #pass
 
 
     def update_target_actor(self):
