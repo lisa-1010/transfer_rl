@@ -48,7 +48,7 @@ class DdpgAgent(object):
 
 
     def get_noisy_action(self, s):
-        action = self.get_action(s) + np.random.normal(NOISE_MEAN, NOISE_STD, np.shape(a)) 
+        action = self.get_action(s) + np.random.normal(NOISE_MEAN, NOISE_STD, np.shape(a))  # should use Ornstein–Uhlenbeck process for noise
         return action
 
     def get_action(self, s):
