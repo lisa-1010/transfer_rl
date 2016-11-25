@@ -9,6 +9,7 @@ class Pipeline(object):
         self.env = gym.make(env_name)
         # get action + observation space, pass into agent
         self.agent = DdpgAgent(self.env)
+        # self.env.monitor.start('../experiments/' + env_name)
 
     def run_episode(self):
         state = self.env.reset()
@@ -27,6 +28,7 @@ class Pipeline(object):
         for episode in xrange(NUM_TEST_TRIALS):
             state = self.env.reset()
             for step in xrange(self.env.spec.timestep_limit):
+                self.env.render()
                 action = self.agent.get_action(state)
                 next_state, reward, done , info = self.env.step(action)
                 state = next_state
@@ -37,19 +39,22 @@ class Pipeline(object):
         print 'Average Reward Per Episode : ', avg_reward
 
 
-def run_training_pipeline(num_episodes=100000):
-    pipeline = Pipeline(env_name='InvertedPendulum-v1')
+    def run(self, num_episodes):
+        for episode in xrange(num_episodes):
+            self.run_episode()
 
-    for episode in xrange(num_episodes):
-        pipeline.run_episode()
+            # Every 100 episodes, run test and print average reward
+            if episode % 10 == 0:
+                self.run_test()
+        self.env.monitor.close()
 
-        # Every 100 episodes, run test and print average reward
-        if episode % 10 == 0:
-            pipeline.run_test()
+
+
 
 
 
 if __name__ == "__main__":
-    run_training_pipeline()
+    pipeline = Pipeline(env_name='InvertedPendulum-v1')
+    pipeline.run(num_episodes=100000)
 
 

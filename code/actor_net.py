@@ -6,6 +6,8 @@ LAYER_1_DIM = 128
 LAYER_2_DIM = 64
 
 
+LEARNING_RATE = 0.0001
+
 class ActorNet(object):
 
     def __init__(self, sess, state_dim, action_dim):
@@ -19,8 +21,8 @@ class ActorNet(object):
             create_target_actor_net(state_dim, action_dim, self.net_vars)
 
         self.action_q_gradients = tf.placeholder("float", [None, action_dim]) 
-        self.param_gradients = tf.gradients(self.action_output, self.net_vars, -self.action_q_gradients)
-        self.optimizer = tf.train.AdamOptimizer(learning_rate=0.001).apply_gradients(zip(self.param_gradients, self.net_vars))
+        self.param_gradients = tf.gradients(self.action_output, self.net_vars, -self.action_q_gradients) # TODO: figure out if we need a negative before action_q_gradients
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE).apply_gradients(zip(self.param_gradients, self.net_vars))
 
         self.train_step = 0
 

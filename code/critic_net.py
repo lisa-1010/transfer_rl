@@ -7,6 +7,9 @@ LAYER_1_DIM = 128
 LAYER_2_DIM = 64
 
 L2_FACTOR = 0.01
+
+LEARNING_RATE = 0.0001
+
 MERGE_MODE = 'elemwise_sum'
 
 class CriticNet(object):
@@ -25,7 +28,7 @@ class CriticNet(object):
 
         weight_decay = tf.add_n([L2_FACTOR * tf.nn.l2_loss(var) for var in self.net_vars])
         self.loss = tf.reduce_mean(tf.square(self.target_q_value_input - self.q_value_output)) + weight_decay
-        self.optimizer = tf.train.AdamOptimizer(learning_rate=0.001).minimize(self.loss)
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE).minimize(self.loss)
         self.action_gradients = tf.gradients(self.q_value_output, self.action_input)
         self.state_gradients = tf.gradients(self.q_value_output, self.state_input)
 
