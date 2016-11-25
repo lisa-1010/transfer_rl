@@ -58,8 +58,8 @@ class DdpgAgent(object):
         return a
 
     def get_action(self, s):
-        a = self.actor.get_action(s)
-        return self._un_normalize_action(a)
+        a = self.actor.get_action([s])
+        return self._un_normalize_action(a)[0]
 
 
     def _train(self):
