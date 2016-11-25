@@ -1,9 +1,8 @@
 import tensorflow as tf
-import tflearn
 from network_architectures import *
 
-LAYER_1_DIM = 128
-LAYER_2_DIM = 64
+LAYER_1_DIM = 400
+LAYER_2_DIM = 300
 
 
 LEARNING_RATE = 0.0001

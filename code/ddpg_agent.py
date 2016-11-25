@@ -5,7 +5,7 @@ import tensorflow as tf
 from critic_net import *
 from actor_net import *
 
-TRAIN_BATCH_SIZE = 128 
+TRAIN_BATCH_SIZE = 10 
 DISCOUNT = 0.99
 NOISE_MEAN = 0
 NOISE_STD = 0.01
@@ -43,10 +43,8 @@ class DdpgAgent(object):
         return actor_action*diff + mean
 
     def perceive_and_train(self, s, a, r, s_p):
-        s = self._normalize_state(s)
-        s_p = self._normalize_state(s_p)
+        # Todo : Figure out how to normalize when the range of values is not given
         a = self._normalize_action(a)
-        r = self._normalize_reward(r)
         self.replay_buffer.add_observation(s, a, r, s_p)
         if self.replay_buffer.can_replay():
             self._train()

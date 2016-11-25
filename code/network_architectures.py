@@ -1,7 +1,6 @@
 # creates different fc neural net architectures, returns the tensor with placeholders
 
 import tensorflow as tf
-import tflearn
 import numpy as np
 
 

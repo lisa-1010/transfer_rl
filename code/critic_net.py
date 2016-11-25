@@ -1,14 +1,13 @@
 import tensorflow as tf
-import tflearn
 from network_architectures import *
 import numpy as np
 
-LAYER_1_DIM = 128
-LAYER_2_DIM = 64
+LAYER_1_DIM = 400
+LAYER_2_DIM = 300
 
 L2_FACTOR = 0.01
 
-LEARNING_RATE = 0.0001
+LEARNING_RATE = 0.001
 
 MERGE_MODE = 'elemwise_sum'
 

@@ -28,7 +28,7 @@ class Pipeline(object):
         for episode in xrange(NUM_TEST_TRIALS):
             state = self.env.reset()
             for step in xrange(self.env.spec.timestep_limit):
-                self.env.render()
+                # self.env.render()
                 action = self.agent.get_action(state)
                 next_state, reward, done , info = self.env.step(action)
                 state = next_state
