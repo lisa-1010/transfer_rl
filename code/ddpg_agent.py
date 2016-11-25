@@ -24,13 +24,13 @@ class DdpgAgent(object):
 
     # Note, for reacher task, the observation space ranges from -inf to inf. Also maybe better to compute mean and diff at start
     def _normalize_state(self, state):
-        mean = sum(self.state_norm_params)/2
-        diff = (self.state_norm_params[0] - self.state_norm_params[1] ) / 2
+        mean = (self.state_norm_params[0] + self.state_norm_params[1] )/2.0
+        diff = (self.state_norm_params[0] - self.state_norm_params[1] ) / 2.0
         return (state - mean)/ diff
 
     def _normalize_action(self, action):
-        mean = sum(self.action_norm_params)/2
-        diff = (self.action_norm_params[0] - self.action_norm_params[1] ) / 2
+        mean = (self.action_norm_params[0] + self.action_norm_params[1] )/2.0
+        diff = (self.action_norm_params[0] - self.action_norm_params[1] ) / 2.0
         return (action - mean)/diff
 
     def _normalize_reward(self, reward):
@@ -39,7 +39,7 @@ class DdpgAgent(object):
 
     def _un_normalize_action(self, actor_action):
         mean = sum(self.action_norm_params)/2
-        diff = (self.action_norm_params[0] - self.action_norm_params[1] ) / 2
+        diff = (self.action_norm_params[0] - self.action_norm_params[1] ) / 2.0
         return actor_action*diff + mean
 
     def perceive_and_train(self, s, a, r, s_p):
@@ -47,14 +47,14 @@ class DdpgAgent(object):
         s_p = self._normalize_state(s_p)
         a = self._normalize_action(a)
         r = self._normalize_reward(r)
-        self.replay_buffer.add_observation((s, a, r, s_p))
-        if self.buffer.can_replay():
+        self.replay_buffer.add_observation(s, a, r, s_p)
+        if self.replay_buffer.can_replay():
             self._train()
 
 
     def get_noisy_action(self, s):
         a = self.get_action(s)
-        a += np.random.normal(NOISE_MEAN, NOISE_STD, np.shape(a))  # should use Ornstein–Uhlenbeck process for noise
+        a += np.random.normal(NOISE_MEAN, NOISE_STD, np.shape(a))
         return a
 
     def get_action(self, s):
@@ -66,9 +66,9 @@ class DdpgAgent(object):
         # Get minibatch
         states, actions, rewards, next_states = self.replay_buffer.get_minibatch(TRAIN_BATCH_SIZE)
         
-        # Compute train targets 
-        policy_advantages = self.critic.get_action_gradients((states, actions))
+        # Compute train targets
         target_next_actions = self.actor.compute_target_actions(next_states)
+        policy_advantages = self.critic.get_action_gradients((states, actions))
         target_q_values = self.critic.compute_target_q_value((next_states, target_next_actions))
         train_targets = rewards + DISCOUNT*target_q_values
 

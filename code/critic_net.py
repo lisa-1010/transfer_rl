@@ -1,6 +1,7 @@
 import tensorflow as tf
 import tflearn
 from network_architectures import *
+import numpy as np
 
 LAYER_1_DIM = 128
 LAYER_2_DIM = 64
@@ -18,7 +19,7 @@ class CriticNet(object):
             create_q_critic_net(state_dim, action_dim, LAYER_1_DIM, LAYER_2_DIM, merge_mode=MERGE_MODE)
 
         self.target_state_input, self.target_action_input, self.target_q_value_output, self.target_update = \
-            create_target_q_critic_net(state_dim, action_dim, self.critic_net_vars, merge_mode=MERGE_MODE)
+            create_target_q_critic_net(state_dim, action_dim, self.net_vars, merge_mode=MERGE_MODE)
 
         self.target_q_value_input = tf.placeholder("float", [None, 1])
 
@@ -55,7 +56,7 @@ class CriticNet(object):
 
     def compute_target_q_value(self, input_batch):
         state_batch, action_batch = input_batch
-        target_q_value = self.sess.run(self.target_q_value,
+        target_q_value = self.sess.run(self.target_q_value_output,
                       feed_dict={self.target_state_input: state_batch, self.target_action_input: action_batch})
         return target_q_value
 
@@ -63,9 +64,9 @@ class CriticNet(object):
     def get_action_gradients(self, input_batch):
         state_batch, action_batch = input_batch
 
-        action_gradients = self.sess.run(self.action_gradients,
-                      feed_dict={self.state_input: state_batch, self.target_action_input: action_batch})
-        return action_gradients
+        action_grads = self.sess.run(self.action_gradients,
+                      feed_dict={self.state_input: state_batch, self.action_input: action_batch})[0]
+        return action_grads
 
 
     def save_network(self):

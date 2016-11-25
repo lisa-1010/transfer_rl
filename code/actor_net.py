@@ -20,7 +20,7 @@ class ActorNet(object):
 
         self.action_q_gradients = tf.placeholder("float", [None, action_dim]) 
         self.param_gradients = tf.gradients(self.action_output, self.net_vars, -self.action_q_gradients)
-        self.optimizer =  tf.train.AdamOptimizer(learning_rate=0.001).apply_gradients(zip(self.net_vars, self.param_gradients))
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=0.001).apply_gradients(zip(self.param_gradients, self.net_vars))
 
         self.train_step = 0
 
@@ -28,20 +28,20 @@ class ActorNet(object):
         self.update_target()
 
 
-    def train_actor(self, input_batch):
+    def train(self, input_batch):
         state_batch, action_q_gradients = input_batch
         self.train_step += 1
         self.sess.run(self.optimizer, feed_dict={self.state_input:state_batch, self.action_q_gradients:action_q_gradients})
-        #pass
 
 
-    def update_target_actor(self):
+    def update_target(self):
         self.sess.run(self.target_update)
-        #pass
+
 
     def get_action(self, input_states):
         actions = self.sess.run(self.action_output, feed_dict={self.state_input:input_states})
         return actions
+
 
     def compute_target_actions(self, input_states):
         target_actions  = self.sess.run(self.target_action_output, feed_dict={self.target_state_input:input_states})
