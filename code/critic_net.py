@@ -5,9 +5,9 @@ import numpy as np
 LAYER_1_DIM = 400
 LAYER_2_DIM = 300
 
-L2_FACTOR = 0.01
+L2_FACTOR = 0.001
 
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.01
 
 MERGE_MODE = 'elemwise_sum'
 

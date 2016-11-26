@@ -117,6 +117,7 @@ def create_target_actor_net(state_dim, action_dim, net_vars, merge_mode='elemwis
     target_actions = tf.nn.tanh(tf.matmul(h2, W3) + b3) # causes actions to be between -1 and 1. Will need to un-nomrmalize when executing
 
     return state_input, target_actions, target_update
+    
 # def create_state_action_three_layer_net(state_dim, action_dim, layer_1_dim, layer_2_dim, output_dim, mode='elemwise_sum'):
 #     # with tflearn
 #     state_input_layer = tflearn.input_data(shape=[None, state_dim])

@@ -5,10 +5,10 @@ import tensorflow as tf
 from critic_net import *
 from actor_net import *
 
-TRAIN_BATCH_SIZE = 10 
+TRAIN_BATCH_SIZE = 64
 DISCOUNT = 0.99
 NOISE_MEAN = 0
-NOISE_STD = 0.01
+NOISE_STD = 1e-4
 
 class DdpgAgent(object):
     def __init__(self, env):
@@ -70,8 +70,9 @@ class DdpgAgent(object):
         train_targets = rewards + DISCOUNT*target_q_values
         self.critic.train((states, actions, train_targets))
 
-        # Train  and update networks 
-        policy_advantages = self.critic.get_action_gradients((states, actions))
+        # Train  and update networks
+        noiseless_actions = self.actor.get_action(states)
+        policy_advantages = self.critic.get_action_gradients((states, noiseless_actions))
         self.actor.train((states, policy_advantages))
         self.critic.update_target()
         self.actor.update_target()
