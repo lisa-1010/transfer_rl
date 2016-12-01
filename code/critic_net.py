@@ -7,7 +7,7 @@ LAYER_2_DIM = 300
 
 L2_FACTOR = 0.001
 
-LEARNING_RATE = 0.01
+LEARNING_RATE =  0.001
 
 MERGE_MODE = 'elemwise_sum'
 

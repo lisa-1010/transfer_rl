@@ -1,6 +1,7 @@
 import gym
 import tensorflow as tf
 from ddpg_agent import *
+import matplotlib.pyplot as plt
 
 NUM_TEST_TRIALS = 100
 
@@ -9,6 +10,7 @@ class Pipeline(object):
         self.env = gym.make(env_name)
         # get action + observation space, pass into agent
         self.agent = DdpgAgent(self.env)
+        self.test_performances = []
         # self.env.monitor.start('../experiments/' + env_name)
 
     def run_episode(self):
@@ -16,7 +18,7 @@ class Pipeline(object):
         for timestep in xrange(self.env.spec.timestep_limit):
             action = self.agent.get_noisy_action(state)
             next_state, reward, done , info = self.env.step(action)
-            self.agent.perceive_and_train(state, action, reward, next_state)
+            self.agent.perceive_and_train(state, action, reward, next_state, done)
             state = next_state
             if done:
                 break
@@ -36,6 +38,7 @@ class Pipeline(object):
                 if done:
                     break
         avg_reward = total_reward / NUM_TEST_TRIALS
+        self.test_performances.append(avg_reward)
         print 'Episode: {} Average Reward Per Episode : {} '.format(episode_num,avg_reward)
 
     def run(self, num_episodes):
@@ -47,13 +50,16 @@ class Pipeline(object):
                 self.run_test(episode)
         self.env.monitor.close()
 
-
-
-
+    def plot_results():
+        plt.xlabel("Episode")
+        plt.ylabel("Average Test Reward")
+        plt.plot(self.test_performances)
+        plt.savefig('Reward-Vrs-Episode')
 
 
 if __name__ == "__main__":
     pipeline = Pipeline(env_name='InvertedPendulum-v1')
     pipeline.run(num_episodes=100000)
+    pipeline.plot_results()
 
 
