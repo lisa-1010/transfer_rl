@@ -19,11 +19,10 @@ def create_q_critic_net(state_dim, action_dim, layer_1_dim, layer_2_dim, merge_m
 
     W2_state = tf.Variable(init_variable_with_fan_in([layer_1_dim, layer_2_dim]), name='critic_W2_state')
 
-    # W1_action = tf.Variable(init_variable_with_fan_in([action_dim, layer_1_dim]), name='critic_W1_action')
-    # b1_action = tf.Variable(init_variable_with_fan_in([layer_1_dim], action_dim), name='critic_b1_action')
+    W1_action = tf.Variable(init_variable_with_fan_in([action_dim, layer_1_dim]), name='critic_W1_action')
+    b1_action = tf.Variable(init_variable_with_fan_in([layer_1_dim], action_dim), name='critic_b1_action')
 
-    # W2_action = tf.Variable(init_variable_with_fan_in([layer_1_dim, layer_2_dim]), name='critic_W2_action')
-    W2_action = tf.Variable(init_variable_with_fan_in([action_dim, layer_2_dim]), name='critic_W2_action') # new
+    W2_action = tf.Variable(init_variable_with_fan_in([action_dim, layer_2_dim]), name='critic_W2_action') 
 
     b2 = tf.Variable(init_variable_with_fan_in([layer_2_dim], layer_1_dim),  name='critic_b2')
 
@@ -31,8 +30,7 @@ def create_q_critic_net(state_dim, action_dim, layer_1_dim, layer_2_dim, merge_m
     W3 = tf.Variable(tf.random_uniform([layer_2_dim, output_dim], -3e-3, 3e-3), name='critic_W3')
     b3 = tf.Variable(tf.random_uniform([output_dim], -3e-3, 3e-3), name='critic_b3')
 
-    # net_vars = [W1_state, b1_state, '''W1_action, b1_action,''' W2_state, W2_action, b2, W3, b3]
-    net_vars = [W1_state, b1_state, W2_state, W2_action, b2, W3, b3] # new 
+    net_vars = [W1_state, b1_state, W2_state, W2_action, b2, W3, b3]
 
     state_input = tf.placeholder("float32", [None, state_dim], name='critic_state_input')
     action_input = tf.placeholder("float32", [None, action_dim], name='critic_action_input')
@@ -40,9 +38,7 @@ def create_q_critic_net(state_dim, action_dim, layer_1_dim, layer_2_dim, merge_m
     h1_state = tf.nn.relu(tf.matmul(state_input, W1_state) + b1_state, name='critic_h1_state_layer')
     h2_state = tf.matmul(h1_state, W2_state, name='critic_h2_state_layer')
 
-    # h1_action = tf.nn.relu(tf.matmul(action_input, W1_action) + b1_action, name='critic_h1_action_layer')
-    # h2_action = tf.matmul(h1_action, W2_action, name='critic_h2_action_layer')
-    h2_action = tf.matmul(action_input, W2_action, name='critic_h2_action_layer') # new
+    h2_action = tf.matmul(action_input, W2_action, name='critic_h2_action_layer')
 
     h2 = None
     if merge_mode == 'elemwise_sum':
@@ -64,17 +60,15 @@ def create_target_q_critic_net(state_dim, action_dim, net_vars, merge_mode='elem
     target_update = ema.apply(net_vars)
     target_net_vars = [ema.average(x) for x in net_vars] # moving averages of net_vars in q_critic_net
 
-    # W1_state, b1_state, W1_action, b1_action, W2_state, W2_action, b2, W3, b3 = tuple(target_net_vars)
-    W1_state, b1_state,W2_state, W2_action, b2, W3, b3 = tuple(target_net_vars)
+    W1_state, b1_state,W2_state, W2_action, b2, W3, b3 = tuple(target_net_vars) 
+
     state_input = tf.placeholder("float", [None, state_dim])
     action_input = tf.placeholder("float", [None, action_dim])
 
     h1_state = tf.nn.relu(tf.matmul(state_input, W1_state) + b1_state)
     h2_state = tf.matmul(h1_state, W2_state)
 
-    # h1_action = tf.nn.relu(tf.matmul(action_input, W1_action) + b1_action)
-    # h2_action = tf.matmul(h1_action, W2_action)
-    h2_action = tf.matmul(action_input, W2_action) # new
+    h2_action = tf.matmul(action_input, W2_action)
 
     h2 = None
     if merge_mode == 'elemwise_sum':

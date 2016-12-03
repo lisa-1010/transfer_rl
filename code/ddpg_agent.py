@@ -9,11 +9,13 @@ TRAIN_BATCH_SIZE = 64
 DISCOUNT = 0.99
 REWARD_NORMALIZATION =  1.0 # Depends on task. Investigate - take (SUCCESS_REWARD/EXPECTED_TRIALS*TIME_PER_TRIAL)
 
-# Could be the process we are producing noise by
-# could be the network architecture
+# HIGH PRIORITY
+# TODO: Implement Batch Normalization
+# TODO: Need to simulate Ornstein-Uhlenbeck process to return noisy action.
 
-NOISE_MEAN = 0
-NOISE_STD = 1e-3
+# LOW PRIORITY
+# TODO: Implement TPRO
+# TODO: Using Value Function instead of Q function - Generalized advantage estimation. 
 
 class DdpgAgent(object):
     def __init__(self, env):
@@ -47,7 +49,7 @@ class DdpgAgent(object):
         return actor_action*self.action_diff + self.action_mean
 
     def perceive_and_train(self, s, a, r, s_p, done):
-        # Todo : Figure out how to normalize when the range of values is not given
+        # TODO : Figure out how to normalize when the range of values is not given
         a = self._normalize_action(a)
         r = self._normalize_reward(r)
         self.replay_buffer.add_observation(s, a, r, s_p, done)
@@ -57,12 +59,11 @@ class DdpgAgent(object):
 
     def get_noisy_action(self, s):
         a = self.get_action(s)
-        # Need to simulate Ornstein-Uhlenbeck process to return noisy action.
+        # TODO: Need to simulate Ornstein-Uhlenbeck process to return noisy action.
         return a
 
     def get_action(self, s):
         a = self.actor.get_action([s])
-        # a = np.clip(self._un_normalize_action(a), -np.ones(a.shape), np.ones(a.shape))
         return a[0]
 
 
@@ -89,10 +90,6 @@ class DdpgAgent(object):
 
         self.critic.update_target()
         self.actor.update_target()
-        
-
-
-
 
 
 
