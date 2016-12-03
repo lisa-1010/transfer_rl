@@ -12,6 +12,7 @@ REWARD_NORMALIZATION =  1.0 # Depends on task. Investigate - take (SUCCESS_REWAR
 # HIGH PRIORITY
 # TODO: Implement Batch Normalization
 # TODO: Need to simulate Ornstein-Uhlenbeck process to return noisy action.
+# TODO: Sample from the done pile to help speed up the process.
 
 # LOW PRIORITY
 # TODO: Implement TPRO
