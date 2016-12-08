@@ -16,8 +16,8 @@ class DdpgAgent(object):
         session = tf.InteractiveSession()
         self.state_dim = env.observation_space.shape[0]
         self.action_dim = env.action_space.shape[0]
-        self.actor = ActorNet(session, self.state_dim, self.action_dim, True)
-        self.critic = CriticNet(session, self.state_dim, self.action_dim, True)
+        self.actor = ActorNet(session, self.state_dim, self.action_dim, True) # Change this to false if no batch normalization
+        self.critic = CriticNet(session, self.state_dim, self.action_dim, True) # Change this to false if no batch normalization
         self.replay_buffer = ReplayBuffer()
         self.ou_noise = OU_Noise(self.action_dim)
         self._compute_norm_params(env.observation_space.high, env.observation_space.low, env.action_space.high, env.action_space.low)
@@ -56,7 +56,7 @@ class DdpgAgent(object):
 
     def get_noisy_action(self, s):
         a = self.actor.get_action([s])[0]
-        # a +=  self.ou_noise.noise()
+        # a +=  self.ou_noise.noise()   # Uncomment if you need noise
         a = self._un_normalize_action(a)
         return a
 
