@@ -7,21 +7,21 @@ LAYER_2_DIM = 300
 
 L2_FACTOR = 0.001
 
-LEARNING_RATE =  0.001
+LEARNING_RATE =  0.005
 
 MERGE_MODE = 'elemwise_sum'
 
 class CriticNet(object):
 
-    def __init__(self, sess, state_dim, action_dim):
+    def __init__(self, sess, state_dim, action_dim, batch_norm):
 
         self.sess = sess # Tensorflow Session
 
-        self.state_input, self.action_input, self.q_value_output, self.net_vars = \
-            create_q_critic_net(state_dim, action_dim, LAYER_1_DIM, LAYER_2_DIM, merge_mode=MERGE_MODE)
+        self.state_input, self.is_training, self.action_input, self.q_value_output, self.net_vars = \
+            create_q_critic_net(state_dim, action_dim, LAYER_1_DIM, LAYER_2_DIM, merge_mode=MERGE_MODE, batch_norm=batch_norm)
 
-        self.target_state_input, self.target_action_input, self.target_q_value_output, self.target_update = \
-            create_target_q_critic_net(state_dim, action_dim, self.net_vars, merge_mode=MERGE_MODE)
+        self.target_state_input, self.is_training_target, self.target_action_input, self.target_q_value_output, self.target_update = \
+            create_target_q_critic_net(state_dim, action_dim, self.net_vars, merge_mode=MERGE_MODE, batch_norm=batch_norm)
 
         self.target_q_value_input = tf.placeholder("float", [None, 1])
 
@@ -40,7 +40,7 @@ class CriticNet(object):
         state_batch, action_batch, target_batch = input_batch
         self.train_step += 1
         self.sess.run(self.optimizer, feed_dict={self.state_input: state_batch, self.action_input: action_batch,
-                                                 self.target_q_value_input: target_batch})
+                                                 self.target_q_value_input: target_batch, self.is_training:True})
 
 
     def update_target(self):
@@ -51,14 +51,14 @@ class CriticNet(object):
         # input_batch is a tuple of state_batch and action_batch
         state_batch, action_batch = input_batch
         q_value = self.sess.run(self.q_value,
-                      feed_dict={self.state_input: state_batch, self.action_input: action_batch})
+                      feed_dict={self.state_input: state_batch, self.action_input: action_batch, self.is_training:False})
         return q_value
 
 
     def compute_target_q_value(self, input_batch):
         state_batch, action_batch = input_batch
         target_q_value = self.sess.run(self.target_q_value_output,
-                      feed_dict={self.target_state_input: state_batch, self.target_action_input: action_batch})
+                      feed_dict={self.target_state_input: state_batch, self.target_action_input: action_batch, self.is_training_target:False})
         return target_q_value
 
 
@@ -66,7 +66,7 @@ class CriticNet(object):
         state_batch, action_batch = input_batch
 
         action_grads = self.sess.run(self.action_gradients,
-                      feed_dict={self.state_input: state_batch, self.action_input: action_batch})[0]
+                      feed_dict={self.state_input: state_batch, self.action_input: action_batch, self.is_training:False})[0]
         return action_grads
 
 

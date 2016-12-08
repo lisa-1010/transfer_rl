@@ -5,19 +5,19 @@ LAYER_1_DIM = 400
 LAYER_2_DIM = 300
 
 
-LEARNING_RATE = 0.0001
+LEARNING_RATE = 0.0005
 
 class ActorNet(object):
 
-    def __init__(self, sess, state_dim, action_dim):
+    def __init__(self, sess, state_dim, action_dim, batch_norm):
 
         self.sess = sess # Tensorflow Session
 
-        self.state_input, self.action_output, self.net_vars = \
-            create_actor_net(state_dim, action_dim, LAYER_1_DIM, LAYER_2_DIM)
+        self.state_input, self.is_training, self.action_output, self.net_vars = \
+            create_actor_net(state_dim, action_dim, LAYER_1_DIM, LAYER_2_DIM, batch_norm=batch_norm)
 
-        self.target_state_input, self.target_action_output, self.target_update = \
-            create_target_actor_net(state_dim, action_dim, self.net_vars)
+        self.target_state_input, self.is_training_target, self.target_action_output, self.target_update = \
+            create_target_actor_net(state_dim, action_dim, self.net_vars, batch_norm=batch_norm)
 
         self.action_q_gradients = tf.placeholder("float", [None, action_dim]) 
         self.param_gradients = tf.gradients(self.action_output, self.net_vars, -self.action_q_gradients) 
@@ -32,20 +32,23 @@ class ActorNet(object):
     def train(self, input_batch):
         state_batch, action_q_gradients = input_batch
         self.train_step += 1
-        self.sess.run(self.optimizer, feed_dict={self.state_input:state_batch, self.action_q_gradients:action_q_gradients})
+        self.sess.run(self.optimizer, feed_dict={self.state_input:state_batch, self.action_q_gradients:action_q_gradients, self.is_training:True})
 
 
     def update_target(self):
         self.sess.run(self.target_update)
 
 
-    def get_action(self, input_states):
-        actions = self.sess.run(self.action_output, feed_dict={self.state_input:input_states})
+    def get_actions(self, input_states):
+        actions = self.sess.run(self.action_output, feed_dict={self.state_input:input_states, self.is_training:True})
         return actions
-
+    
+    def get_action(self, input_state):
+        actions = self.sess.run(self.action_output, feed_dict={self.state_input:input_state, self.is_training:False})
+        return actions[0]
 
     def compute_target_actions(self, input_states):
-        target_actions  = self.sess.run(self.target_action_output, feed_dict={self.target_state_input:input_states})
+        target_actions  = self.sess.run(self.target_action_output, feed_dict={self.target_state_input:input_states, self.is_training_target:True})
         return target_actions
 
 

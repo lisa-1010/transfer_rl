@@ -4,28 +4,22 @@ import tensorflow as tf
 
 from critic_net import *
 from actor_net import *
+from ou_noise import *
 
 TRAIN_BATCH_SIZE = 64
 DISCOUNT = 0.99
 REWARD_NORMALIZATION =  1.0 # Depends on task. Investigate - take (SUCCESS_REWARD/EXPECTED_TRIALS*TIME_PER_TRIAL)
 
-# HIGH PRIORITY
-# TODO: Implement Batch Normalization
-# TODO: Need to simulate Ornstein-Uhlenbeck process to return noisy action.
-# TODO: Sample from the done pile to help speed up the process.
-
-# LOW PRIORITY
-# TODO: Implement TPRO
-# TODO: Using Value Function instead of Q function - Generalized advantage estimation. 
 
 class DdpgAgent(object):
     def __init__(self, env):
         session = tf.InteractiveSession()
         self.state_dim = env.observation_space.shape[0]
         self.action_dim = env.action_space.shape[0]
-        self.actor = ActorNet(session, self.state_dim, self.action_dim)
-        self.critic = CriticNet(session, self.state_dim, self.action_dim)
+        self.actor = ActorNet(session, self.state_dim, self.action_dim, True)
+        self.critic = CriticNet(session, self.state_dim, self.action_dim, True)
         self.replay_buffer = ReplayBuffer()
+        self.ou_noise = OU_Noise(self.action_dim)
         self._compute_norm_params(env.observation_space.high, env.observation_space.low, env.action_space.high, env.action_space.low)
 
     def _compute_norm_params(self, state_high, state_low, action_high, action_low):
@@ -56,16 +50,21 @@ class DdpgAgent(object):
         self.replay_buffer.add_observation(s, a, r, s_p, done)
         if self.replay_buffer.can_replay():
             self._train()
+        if done:
+            self.ou_noise.start()
 
 
     def get_noisy_action(self, s):
-        a = self.get_action(s)
-        # TODO: Need to simulate Ornstein-Uhlenbeck process to return noisy action.
+        a = self.actor.get_action([s])[0]
+        # a +=  self.ou_noise.noise()
+        a = self._un_normalize_action(a)
         return a
 
     def get_action(self, s):
-        a = self.actor.get_action([s])
-        return a[0]
+        a = self.actor.get_action([s])[0]
+        a = self._un_normalize_action(a)
+        # a = np.clip(a, -np.ones(self.action_dim), np.ones(self.action_dim))
+        return a
 
 
     def _train(self):
@@ -85,7 +84,7 @@ class DdpgAgent(object):
         self.critic.train((states, actions, train_targets))
 
         # Train  and update networks
-        noiseless_actions = self.actor.get_action(states)
+        noiseless_actions = self.actor.get_actions(states)
         policy_advantages = self.critic.get_action_gradients((states, noiseless_actions))
         self.actor.train((states, policy_advantages))
 
